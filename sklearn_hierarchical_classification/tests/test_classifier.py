@@ -29,6 +29,7 @@ from sklearn_hierarchical_classification.tests.fixtures import (
     make_clothing_graph_and_data,
     make_digits_dataset,
     make_mlb_classifier_and_data_with_feature_extraction_pipeline,
+    make_classifier_and_data_with_feature_extraction_pipeline
 )
 from sklearn_hierarchical_classification.tests.matchers import matches_graph
 
@@ -98,6 +99,37 @@ def test_mlb_hierarchy_classification_with_feature_extraction_pipeline():
     accuracy = accuracy_score(y_test, y_pred > -0.2)
 
     assert_that(accuracy, is_(close_to(.8, delta=0.05)))
+
+
+def test_hierarchy_classification_with_feature_extraction_pipeline():
+    """Test classification with a feature extraction pipeline using different params"""
+    for use_mlb in [True, False]:
+        for use_decision_function in [True, False]:
+            print('Testing MLB: {} DF: {}'.format(use_mlb, use_decision_function))
+            clf, (X, y) = make_classifier_and_data_with_feature_extraction_pipeline(use_mlb=use_mlb, \
+                                                        use_decision_function=use_decision_function)
+
+            X_train, X_test, y_train, y_test = train_test_split(
+                X,
+                y,
+                test_size=0.30,
+                random_state=RANDOM_STATE,
+            )
+
+            clf.fit(X_train, y_train)
+
+            if use_mlb:
+                y_pred = clf.predict_proba(X_test)
+                if use_decision_function:
+                    y_pred[where(y_pred == 0)] = -1
+                    accuracy = accuracy_score(y_test, y_pred > -0.2)
+                else:
+                    accuracy = accuracy_score(y_test, y_pred > 0.8)
+                assert_that(accuracy, is_(close_to(.9, delta=0.1)))
+            else:
+                y_pred = clf.predict(X_test)
+                accuracy = accuracy_score(y_test, y_pred)
+                assert_that(accuracy, is_(close_to(.9, delta=0.1)))
 
 
 def test_base_estimator_as_dict():
