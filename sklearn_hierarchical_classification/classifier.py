@@ -505,8 +505,6 @@ class HierarchicalClassifier(BaseEstimator, ClassifierMixin, MetaEstimatorMixin)
             if self.mlb is None:
                 if self.feature_extraction == "raw":
                     X_, y_ = [X_[i] for i, labels in enumerate(y_rolled_up) if labels], flatten_list(y_rolled_up)
-                    # self.logger.debug('Features for current node: {}'.format(node_id))
-                    # self.logger.debug(X_[:10])
                 else:
                     y_ = flatten_list(y_rolled_up)
             else:
@@ -586,15 +584,6 @@ class HierarchicalClassifier(BaseEstimator, ClassifierMixin, MetaEstimatorMixin)
 
         while clf:
             if self.use_decision_function and hasattr(clf, "decision_function"):
-                # if self.feature_extraction == "raw":
-                #     probs = clf.decision_function([x])
-                #     argmax = np.argmax(probs)
-                #     score = probs[0, argmax]
-
-                # else:
-                #     probs = clf.decision_function(x)
-                #     argmax = np.argmax(probs)
-                #     score = probs[argmax]
                 probs = clf.decision_function([x]) if self.feature_extraction == "raw" else clf.decision_function(x)
                 last_axis = probs.ndim-1
                 if probs.ndim == 1 and probs.shape[0] == 1:
@@ -649,6 +638,7 @@ class HierarchicalClassifier(BaseEstimator, ClassifierMixin, MetaEstimatorMixin)
                             prediction = class_
 
             if self.mlb is None:
+                #TODO: Use this function for multi-label as well
                 if self._should_early_terminate(
                     current_node=path[-1],
                     prediction=prediction,

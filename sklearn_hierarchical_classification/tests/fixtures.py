@@ -5,6 +5,7 @@ Unit-test fixtures and factory methods.
 from itertools import product
 
 import numpy as np
+import random
 from networkx import DiGraph, gn_graph, to_dict_of_lists
 from sklearn.datasets import fetch_20newsgroups, load_digits, make_blobs
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -207,6 +208,9 @@ def make_classifier_and_data_with_feature_extraction_pipeline(use_mlb=False, use
     cats = ['comp.graphics', 'comp.windows.x', 'rec.autos', 'rec.motorcycles']
     newsgroups_train = fetch_20newsgroups(subset="train", categories=cats)
     X, Y = newsgroups_train.data, newsgroups_train.target
+    xy_subset = random.choices(list(zip(X, Y)), k=2000)
+    X = [rec[0] for rec in xy_subset]
+    Y = [rec[1] for rec in xy_subset]
     class_hierarchy = make_newsgroups_hierarchy(categories=cats)
     names = newsgroups_train.target_names
 
@@ -240,6 +244,8 @@ def make_classifier_and_data_with_feature_extraction_pipeline(use_mlb=False, use
 
     if use_decision_function:
         clf_kwargs['use_decision_function'] = True
+    elif use_mlb:
+        clf_kwargs['mlb_prediction_threshold'] = 0.7
 
     clf = make_classifier(
         base_estimator=base_estimator,
